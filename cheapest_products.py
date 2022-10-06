@@ -1,3 +1,5 @@
+from tkinter.ttk import Progressbar
+from turtle import color
 from bs4 import BeautifulSoup
 import requests
 from selenium import webdriver
@@ -6,6 +8,7 @@ from geopy.geocoders import Nominatim
 import geocoder
 import re
 import time
+from tkinter import *
 
 products = []
 prices = []
@@ -47,11 +50,13 @@ def set_up(product):
     #        "longitude": longitude,
     #        "accuracy": 100
     #})
-
-
-    #costco(browser, url_costco)
-    #walmart(browser, url_walmart)
-    walgreens(browser, url_walgreens)
+    if (walgreensVar.get()) == 1 :
+        walgreens(browser, url_walgreens)
+    if (costcoVar.get()) == 1:
+        costco(browser, url_costco)
+    if (walmartVar.get()) == 1:
+        walmart(browser, url_walmart)
+   
 
     df = pd.DataFrame({'Product Name':products,'Price':prices,'Rating':ratings, 'Store':stores}).sort_values(by=['Price'])
 
@@ -95,7 +100,7 @@ def transformWalmart(soap):
     #return print(df)
 
 def transformCostco(soap):
-    
+
     products.append(soap.find('span', class_ = 'description').find('a').string.replace('\t', '').replace('\n', ''))
     prices.append(re.sub(r'[\t\n]', "", soap.find('div', class_= 'price').string.replace('$', '')))
     ratings.append(soap.find('div', class_='stars').find('span', class_ = 'offscreen').text.replace('\t', '').replace('\n', ''))
@@ -115,5 +120,71 @@ def transformWalgreens(soap):
     stores.append('Walgreens')
 
 
-c = set_up('shampoo')
+#c = set_up('shampoo')
+
+root = Tk()
+
+root.title("Welcome to cheapest products!")
+
+lbl = Label(root, text = "Choose a product")
+lbl.grid(column =1, row =1)
+
+txt = Entry(root, width=10)
+txt.grid(column =2, row =1)
+
+
+walgreensVar = IntVar()
+costcoVar = IntVar()
+walmartVar = IntVar()
+
+buttonWalgreens = Checkbutton(root, text = "Walgreens", 
+                      variable = walgreensVar,
+                      onvalue = 1,
+                      offvalue = 0,
+                      height = 2,
+                      width = 10)
+
+buttonCostco = Checkbutton(root, text = "Costco", 
+                      variable = costcoVar,
+                      onvalue = 1,
+                      offvalue = 0,
+                      height = 2,
+                      width = 10)
+
+buttonWalmart = Checkbutton(root, text = "Walmart", 
+                      variable = walmartVar,
+                      onvalue = 1,
+                      offvalue = 0,
+                      height = 2,
+                      width = 10)
+
+buttonWalmart.grid(column =1, row =2)
+buttonCostco.grid(column =2, row =2)
+buttonWalgreens.grid(column =3, row =2)
+
+
+pb = Progressbar(
+    root,
+    orient='horizontal',
+    mode='indeterminate',
+    length=280
+)
+# place the progressbar
+#pb.grid(column=3, row=1, padx=10, pady=20)
+
+
+
+
+def clicked():
+    set_up(txt.get())
+    
+
+btn = Button(root, text = "Search" ,
+             fg = "black", command=lambda: [set_up(txt.get())])
+# Set Button Grid
+btn.grid(column=3, row=1)
+
+
+
+root.mainloop()
 
